@@ -89,12 +89,11 @@ func (s *Seed) usersSeed(total int) {
 
 	for i := 0; i < total; i++ {
 		var (
-			username  = gofakeit.Username()
-			email     = gofakeit.Email()
-			role      = roles[gofakeit.Number(0, 2)]
-			addresses = []*string{&gofakeit.Address().Address, nil}
-			address   = addresses[gofakeit.Number(0, 1)]
-			arg       = make(map[string]any)
+			username = gofakeit.Username()
+			email    = gofakeit.Email()
+			role     = roles[gofakeit.Number(0, 2)]
+			address  = gofakeit.Address().Address
+			arg      = make(map[string]any)
 		)
 
 		/*
