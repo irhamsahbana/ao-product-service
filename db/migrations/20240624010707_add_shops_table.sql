@@ -6,9 +6,7 @@ CREATE TABLE IF NOT EXISTS shops (
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    deleted_at TIMESTAMP
 );
 -- +goose StatementEnd
 

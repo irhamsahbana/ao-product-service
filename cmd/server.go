@@ -64,6 +64,12 @@ func RunServer(cmd *flag.FlagSet, args []string) {
 		AllowMethods: "GET,POST,PUT,DELETE,PATCH,OPTIONS,HEAD",
 		AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin,Authorization",
 	}))
+
+	// Incoming request logger middleware
+	app.Use(func(c *fiber.Ctx) error {
+		log.Info().Msgf("%s | %s", c.Method(), c.OriginalURL())
+		return c.Next()
+	})
 	// End Application Middlewares
 
 	adapter.Adapters.Sync(

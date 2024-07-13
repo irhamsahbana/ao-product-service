@@ -72,13 +72,13 @@ func (h *producthandler) updateProduct(c *fiber.Ctx) error {
 		v   = adapter.Adapters.Validator
 	)
 
-	req.UserId = c.Query("user_id")
-	req.Id = c.Params("id")
-
 	if err := c.BodyParser(req); err != nil {
 		log.Error().Err(err).Msg("service: Failed to parse request body")
 		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
 	}
+
+	req.UserId = c.Query("user_id")
+	req.Id = c.Params("id")
 
 	if err := v.Validate(req); err != nil {
 		log.Warn().Err(err).Any("payload", req).Msg("service: Invalid request body")

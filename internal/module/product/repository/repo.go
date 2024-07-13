@@ -270,10 +270,8 @@ func (p *productRepository) IsProductOwner(ctx context.Context, userId, productI
 					products
 				LEFT JOIN
 					shops ON products.shop_id = shops.id
-				LEFT JOIN
-					users ON shops.user_id = users.id
 				WHERE
-					users.id = $1
+					shops.user_id = $1
 					AND products.id = $2
 			)
 	`
