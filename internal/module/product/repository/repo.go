@@ -83,6 +83,7 @@ func (p *productRepository) GetProducts(ctx context.Context, req *entity.GetProd
 			name,
 			image_url,
 			price,
+			stock,
 			created_at,
 			updated_at
 		FROM
@@ -161,6 +162,7 @@ func (p *productRepository) GetProducts(ctx context.Context, req *entity.GetProd
 			Name:       d.Name,
 			ImageUrl:   d.ImageUrl,
 			Price:      d.Price,
+			Stock:      d.Stock,
 			CreatedAt:  d.CreatedAt,
 			UpdatedAt:  d.UpdatedAt,
 		})

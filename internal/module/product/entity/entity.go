@@ -127,6 +127,7 @@ type Product struct {
 	Name       string    `json:"name" db:"name"`
 	ImageUrl   *string   `json:"image_url" db:"image_url"`
 	Price      float64   `json:"price" db:"price"`
+	Stock      int       `json:"stock" db:"stock"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
 }
