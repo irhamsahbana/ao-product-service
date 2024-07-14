@@ -30,6 +30,15 @@ type UpdateProductRequest struct {
 	Stock       int64   `json:"stock" validate:"required,numeric"`
 }
 
+type UpdateProductStockRequest struct {
+	Items []UpdateStock `validate:"required,dive,required"`
+}
+
+type UpdateStock struct {
+	ProductId string `json:"product_id" validate:"required,uuid"`
+	Stock     int64  `json:"stock" validate:"required,numeric"`
+}
+
 type UpsertProductResponse struct {
 	Id          string    `json:"id" db:"id"`
 	UserId      string    `json:"user_id" db:"user_id"`

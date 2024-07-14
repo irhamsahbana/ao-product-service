@@ -95,10 +95,9 @@ func (p *productRepository) GetProducts(ctx context.Context, req *entity.GetProd
 	if len(req.ProductIds) > 0 {
 		var ids string
 		for i, id := range req.ProductIds {
-			if i == 0 {
-				ids += "'" + id + "'"
-			} else {
-				ids += ", '" + id + "'"
+			ids += "'" + id + "'"
+			if i < len(req.ProductIds)-1 {
+				ids += ", "
 			}
 		}
 		query += " AND id IN (" + ids + ")"
@@ -217,6 +216,44 @@ func (p *productRepository) UpdateProduct(ctx context.Context, req *entity.Updat
 
 	res.UserId = req.UserId
 	return res, nil
+}
+func (p *productRepository) UpdateProductStock(ctx context.Context, req *entity.UpdateProductStockRequest) error {
+	tx, err := p.db.BeginTxx(ctx, nil)
+	if err != nil {
+		log.Error().Err(err).Any("payload", req).Msg("repository: UpdateProductStock failed")
+		return err
+	}
+	defer tx.Rollback()
+
+	query := `
+		UPDATE
+			products
+		SET
+			stock = :stock
+		WHERE
+			id = :id
+	`
+
+	for _, item := range req.Items {
+		arg := map[string]any{
+			"id":    item.ProductId,
+			"stock": item.Stock,
+		}
+
+		_, err = tx.NamedExec(query, arg)
+		if err != nil {
+			log.Error().Err(err).Any("payload", req).Msg("repository: UpdateProductStock failed")
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Error().Err(err).Any("payload", req).Msg("repository: UpdateProductStock failed")
+		return err
+	}
+
+	return nil
 }
 
 func (p *productRepository) DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error {

@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"product-service/internal/adapter"
 	m "product-service/internal/middleware"
 	"product-service/internal/module/product/entity"
@@ -31,6 +32,7 @@ func (h *producthandler) Register(router fiber.Router) {
 	router.Get("/products", h.getProducts)
 
 	router.Post("/products", m.AuthQueryParams, h.createProduct)
+	router.Patch("/product-stocks", h.updateProductStock)
 	router.Patch("/products/:id", m.AuthQueryParams, h.updateProduct)
 	router.Delete("/products/:id", m.AuthQueryParams, h.deleteProduct)
 }
@@ -93,6 +95,41 @@ func (h *producthandler) updateProduct(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(response.Success(resp, ""))
+}
+
+func (h *producthandler) updateProductStock(c *fiber.Ctx) error {
+	var (
+		reqArray = make([]entity.UpdateStock, 0)
+		ctx      = c.Context()
+		v        = adapter.Adapters.Validator
+		req      = &entity.UpdateProductStockRequest{}
+	)
+
+	err := json.Unmarshal(c.Body(), &reqArray)
+	if err != nil {
+		log.Error().Err(err).Msg("service: Failed to parse request body")
+		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+	}
+
+	// if err := c.BodyParser(req); err != nil {
+	// 	log.Error().Err(err).Msg("service: Failed to parse request body")
+	// 	return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+	// }
+
+	req.Items = reqArray
+	if err := v.Validate(req); err != nil {
+		log.Warn().Err(err).Any("payload", req).Msg("service: Invalid request body")
+		code, errs := errmsg.Errors(err, req)
+		return c.Status(code).JSON(response.Error(errs))
+	}
+
+	err = h.service.UpdateProductStock(ctx, req)
+	if err != nil {
+		code, errs := errmsg.Errors(err, req)
+		return c.Status(code).JSON(response.Error(errs))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.Success(nil, ""))
 }
 
 func (h *producthandler) deleteProduct(c *fiber.Ctx) error {

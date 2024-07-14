@@ -75,6 +75,10 @@ func (p *productService) UpdateProduct(ctx context.Context, req *entity.UpdatePr
 	return res, nil
 }
 
+func (p *productService) UpdateProductStock(ctx context.Context, req *entity.UpdateProductStockRequest) error {
+	return p.repo.UpdateProductStock(ctx, req)
+}
+
 func (p *productService) DeleteProduct(ctx context.Context, req *entity.DeleteProductRequest) error {
 	isProductOwner, err := p.repo.IsProductOwner(ctx, req.UserId, req.ProductId)
 	if err != nil {
