@@ -1,6 +1,9 @@
 package middleware
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
+)
 
 func AuthQueryParams(c *fiber.Ctx) error {
 	// get query params
@@ -8,6 +11,7 @@ func AuthQueryParams(c *fiber.Ctx) error {
 
 	// If the cookie is not set, return an unauthorized status
 	if userId == "" {
+		log.Warn().Msg("middleware: Unauthorized")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"message": "Unauthorized",
 			"success": false,

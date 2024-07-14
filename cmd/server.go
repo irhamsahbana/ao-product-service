@@ -67,7 +67,7 @@ func RunServer(cmd *flag.FlagSet, args []string) {
 
 	// Incoming request logger middleware
 	app.Use(func(c *fiber.Ctx) error {
-		log.Info().Msgf("%s | %s", c.Method(), c.OriginalURL())
+		log.Info().Msgf("[%s] %s", c.Method(), c.OriginalURL())
 		return c.Next()
 	})
 	// End Application Middlewares

@@ -2,6 +2,7 @@ package entity
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -29,6 +30,15 @@ type UpdateProductRequest struct {
 	Stock       int64   `json:"stock" validate:"required,numeric"`
 }
 
+type UpdateProductStockRequest struct {
+	Items []UpdateStock `validate:"required,dive,required"`
+}
+
+type UpdateStock struct {
+	ProductId string `json:"product_id" validate:"required,uuid"`
+	Stock     int64  `json:"stock" validate:"required,numeric"`
+}
+
 type UpsertProductResponse struct {
 	Id          string    `json:"id" db:"id"`
 	UserId      string    `json:"user_id" db:"user_id"`
@@ -48,18 +58,20 @@ type DeleteProductRequest struct {
 }
 
 type GetProductsRequest struct {
-	ShopId      string `query:"shop_id" validate:"omitempty,uuid"`
-	CategoryId  string `query:"category_id" validate:"omitempty,uuid"`
-	Name        string `query:"name" validate:"omitempty,max=255,min=3"`
-	PriceMinStr string `query:"price_min" validate:"omitempty,numeric,gte=0"`
-	PriceMaxStr string `query:"price_max" validate:"omitempty,numeric,gte=0"`
-	IsAvailable bool   `query:"is_available"`
+	ShopId        string `query:"shop_id" validate:"omitempty,uuid"`
+	CategoryId    string `query:"category_id" validate:"omitempty,uuid"`
+	Name          string `query:"name" validate:"omitempty,max=255,min=3"`
+	PriceMinStr   string `query:"price_min" validate:"omitempty,numeric,gte=0"`
+	PriceMaxStr   string `query:"price_max" validate:"omitempty,numeric,gte=0"`
+	IsAvailable   bool   `query:"is_available"`
+	ProductIdsStr string `query:"product_ids"`
 
 	Page  int `query:"page" validate:"required,min=1"`
 	Limit int `query:"limit" validate:"required,min=1,max=100"`
 
-	PriceMin float64
-	PriceMax float64
+	PriceMin   float64
+	PriceMax   float64
+	ProductIds []string
 }
 
 func (r *GetProductsRequest) SetDefaults() {
@@ -69,6 +81,14 @@ func (r *GetProductsRequest) SetDefaults() {
 
 	if r.Limit < 1 {
 		r.Limit = 10
+	}
+
+	if r.ProductIdsStr != "" {
+		// split product ids string by comma
+		ids := strings.Split(r.ProductIdsStr, ",")
+		r.ProductIds = append(r.ProductIds, ids...)
+	} else {
+		r.ProductIds = make([]string, 0)
 	}
 }
 
@@ -116,6 +136,7 @@ type Product struct {
 	Name       string    `json:"name" db:"name"`
 	ImageUrl   *string   `json:"image_url" db:"image_url"`
 	Price      float64   `json:"price" db:"price"`
+	Stock      int       `json:"stock" db:"stock"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
 }
