@@ -12,8 +12,8 @@ import (
 // It will initialize the database connection and run the seed
 func RunSeed(cmd *flag.FlagSet, args []string) {
 	var (
-		table = cmd.String("table", "", "seed to run")          // ex: go run main.go seed -table=users
-		total = cmd.Int("total", 1, "total of records to seed") // ex: go run main.go seed -table=users -total=10
+		table = cmd.String("table", "", "seed to run")          // ex: go run main.go seed -table=product_categories
+		total = cmd.Int("total", 1, "total of records to seed") // ex: go run main.go seed -table=product_categories -total=10
 	)
 
 	if err := cmd.Parse(args); err != nil { // parse the flags

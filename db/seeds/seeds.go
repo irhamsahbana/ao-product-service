@@ -30,8 +30,6 @@ func Execute(db *sqlx.DB, table string, total int) {
 func (s *Seed) run(table string, total int) {
 
 	switch table {
-	case "users":
-		s.usersSeed(total)
 	case "product_categories":
 		s.ProductCategoriesSeed(total)
 	default:
@@ -73,51 +71,4 @@ func (s *Seed) ProductCategoriesSeed(total int) {
 	}
 
 	log.Info().Msg("product_categories table seeded successfully")
-}
-
-// this function is used to seed the users table
-// with random data
-func (s *Seed) usersSeed(total int) {
-	var (
-		roles = []string{"admin", "buyer", "seller"}
-		args  = make([]map[string]any, 0)
-		query = `
-			INSERT INTO users (username, email, role, address)
-			VALUES (:username, :email, :role, :address)
-		`
-	)
-
-	for i := 0; i < total; i++ {
-		var (
-			username = gofakeit.Username()
-			email    = gofakeit.Email()
-			role     = roles[gofakeit.Number(0, 2)]
-			address  = gofakeit.Address().Address
-			arg      = make(map[string]any)
-		)
-
-		/*
-			log.Info().Msg("Seeding user: " + username)
-			log.Info().Msg("Email: " + email)
-			log.Info().Msg("Role: " + role)
-			if address != nil {
-				log.Info().Msg("Address: " + *address)
-			} else {
-				log.Info().Msg("Address: nil")
-			log.Info().Msg("====================================")
-		*/
-
-		arg["username"] = username
-		arg["email"] = email
-		arg["role"] = role
-		arg["address"] = address
-		args = append(args, arg)
-	}
-
-	_, err := s.db.NamedExec(query, args)
-	if err != nil {
-		log.Error().Err(err).Msg("Error creating users")
-	}
-
-	log.Info().Msg("users table seeded successfully")
 }
