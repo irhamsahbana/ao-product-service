@@ -2,6 +2,7 @@ package entity
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -48,18 +49,20 @@ type DeleteProductRequest struct {
 }
 
 type GetProductsRequest struct {
-	ShopId      string `query:"shop_id" validate:"omitempty,uuid"`
-	CategoryId  string `query:"category_id" validate:"omitempty,uuid"`
-	Name        string `query:"name" validate:"omitempty,max=255,min=3"`
-	PriceMinStr string `query:"price_min" validate:"omitempty,numeric,gte=0"`
-	PriceMaxStr string `query:"price_max" validate:"omitempty,numeric,gte=0"`
-	IsAvailable bool   `query:"is_available"`
+	ShopId        string `query:"shop_id" validate:"omitempty,uuid"`
+	CategoryId    string `query:"category_id" validate:"omitempty,uuid"`
+	Name          string `query:"name" validate:"omitempty,max=255,min=3"`
+	PriceMinStr   string `query:"price_min" validate:"omitempty,numeric,gte=0"`
+	PriceMaxStr   string `query:"price_max" validate:"omitempty,numeric,gte=0"`
+	IsAvailable   bool   `query:"is_available"`
+	ProductIdsStr string `query:"product_ids"`
 
 	Page  int `query:"page" validate:"required,min=1"`
 	Limit int `query:"limit" validate:"required,min=1,max=100"`
 
-	PriceMin float64
-	PriceMax float64
+	PriceMin   float64
+	PriceMax   float64
+	ProductIds []string
 }
 
 func (r *GetProductsRequest) SetDefaults() {
@@ -69,6 +72,14 @@ func (r *GetProductsRequest) SetDefaults() {
 
 	if r.Limit < 1 {
 		r.Limit = 10
+	}
+
+	if r.ProductIdsStr != "" {
+		// split product ids string by comma
+		ids := strings.Split(r.ProductIdsStr, ",")
+		r.ProductIds = append(r.ProductIds, ids...)
+	} else {
+		r.ProductIds = make([]string, 0)
 	}
 }
 

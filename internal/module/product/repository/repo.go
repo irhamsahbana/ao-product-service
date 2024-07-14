@@ -91,6 +91,18 @@ func (p *productRepository) GetProducts(ctx context.Context, req *entity.GetProd
 			deleted_at IS NULL
 	`
 
+	if len(req.ProductIds) > 0 {
+		var ids string
+		for i, id := range req.ProductIds {
+			if i == 0 {
+				ids += "'" + id + "'"
+			} else {
+				ids += ", '" + id + "'"
+			}
+		}
+		query += " AND id IN (" + ids + ")"
+	}
+
 	if req.ShopId != "" {
 		query += " AND shop_id = :shop_id"
 		arg["shop_id"] = req.ShopId
