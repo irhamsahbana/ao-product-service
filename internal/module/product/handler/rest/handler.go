@@ -10,6 +10,9 @@ import (
 	"product-service/internal/module/product/service"
 	"product-service/pkg/errmsg"
 	"product-service/pkg/response"
+	"time"
+
+	llog "log"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
@@ -99,37 +102,47 @@ func (h *producthandler) updateProduct(c *fiber.Ctx) error {
 
 func (h *producthandler) updateProductStock(c *fiber.Ctx) error {
 	var (
-		reqArray = make([]entity.UpdateStock, 0)
-		ctx      = c.Context()
-		v        = adapter.Adapters.Validator
-		req      = &entity.UpdateProductStockRequest{}
+		reqArray  = make([]entity.UpdateStock, 0)
+		ctx       = c.Context()
+		v         = adapter.Adapters.Validator
+		req       = &entity.UpdateProductStockRequest{}
+		message   = "Your request has been successfully processed"
+		timeStart = time.Now()
 	)
+	defer func() {
+		duration := time.Since(timeStart).Milliseconds()
+		llog.Println("create payment request", duration)
+		log.Debug().Any("duration", duration).Any("unit", "ms").Msg("service: UpdateProductStock")
+	}()
 
 	err := json.Unmarshal(c.Body(), &reqArray)
 	if err != nil {
 		log.Error().Err(err).Msg("service: Failed to parse request body")
-		return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+		// return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
-
-	// if err := c.BodyParser(req); err != nil {
-	// 	log.Error().Err(err).Msg("service: Failed to parse request body")
-	// 	return c.Status(fiber.StatusBadRequest).JSON(response.Error(err))
-	// }
 
 	req.Items = reqArray
 	if err := v.Validate(req); err != nil {
 		log.Warn().Err(err).Any("payload", req).Msg("service: Invalid request body")
-		code, errs := errmsg.Errors(err, req)
-		return c.Status(code).JSON(response.Error(errs))
+		// code, errs := errmsg.Errors(err, req)
+		// return c.Status(code).JSON(response.Error(errs))
+		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
 	}
 
 	err = h.service.UpdateProductStock(ctx, req)
 	if err != nil {
-		code, errs := errmsg.Errors(err, req)
-		return c.Status(code).JSON(response.Error(errs))
+		code, errs := errmsg.Errors[error](err, nil)
+		response := response.Error(errs)
+		message, ok := response["message"].(string)
+		if !ok {
+			message = "Your request has been failed to process"
+		}
+		return c.Status(code).SendString(message)
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.Success(nil, ""))
+	// return c.Status(fiber.StatusOK).JSON(response.Success(nil, ""))
+	return c.Status(fiber.StatusOK).SendString(message)
 }
 
 func (h *producthandler) deleteProduct(c *fiber.Ctx) error {
@@ -159,10 +172,16 @@ func (h *producthandler) deleteProduct(c *fiber.Ctx) error {
 
 func (h *producthandler) getProducts(c *fiber.Ctx) error {
 	var (
-		req = &entity.GetProductsRequest{}
-		ctx = c.Context()
-		v   = adapter.Adapters.Validator
+		req       = &entity.GetProductsRequest{}
+		ctx       = c.Context()
+		v         = adapter.Adapters.Validator
+		timeStart = time.Now()
 	)
+	defer func() {
+		duration := time.Since(timeStart).Milliseconds()
+		llog.Println("create payment request", duration)
+		log.Debug().Any("duration", duration).Any("unit", "ms").Msg("service: GetProducts")
+	}()
 
 	if err := c.QueryParser(req); err != nil {
 		log.Error().Err(err).Msg("service: Failed to parse request query")
