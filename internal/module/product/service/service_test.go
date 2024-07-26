@@ -20,8 +20,8 @@ type MockService struct {
 
 type ServiceList struct {
 	suite.Suite
-	mockPort *mockPort.MockProductRepo
-	service  ports.ProductService
+	mockProductRepo *mockPort.MockProductRepo
+	service         ports.ProductService
 
 	mockCreateProductReq          *entity.CreateProductRequest
 	mockUpdateProductReq          *entity.UpdateProductRequest
@@ -31,8 +31,8 @@ type ServiceList struct {
 }
 
 func (suite *ServiceList) SetupTest() {
-	suite.mockPort = new(mockPort.MockProductRepo)
-	suite.service = NewProductService(suite.mockPort)
+	suite.mockProductRepo = new(mockPort.MockProductRepo)
+	suite.service = NewProductService(suite.mockProductRepo)
 	suite.mockCreateProductReq = &entity.CreateProductRequest{
 		UserId:      "1",
 		ShopId:      "2",
@@ -95,8 +95,8 @@ func (suite *ServiceList) SetupTest() {
 func (u *ServiceList) TestCreateProduct_Success() {
 	ctx := context.Background()
 	req := u.mockCreateProductReq
-	u.mockPort.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(true, nil)
-	u.mockPort.Mock.On("CreateProduct", ctx, req).Return(mock.Anything, nil)
+	u.mockProductRepo.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(true, nil)
+	u.mockProductRepo.Mock.On("CreateProduct", ctx, req).Return(mock.Anything, nil)
 	_, err := u.service.CreateProduct(ctx, req)
 
 	u.Equal(nil, err)
@@ -105,7 +105,7 @@ func (u *ServiceList) TestCreateProduct_Success() {
 func (u *ServiceList) TestCreateProduct_IsShopOwnerError() {
 	ctx := context.Background()
 	req := u.mockCreateProductReq
-	u.mockPort.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(false, errors.New(mock.Anything))
+	u.mockProductRepo.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(false, errors.New(mock.Anything))
 	_, err := u.service.CreateProduct(ctx, req)
 
 	u.Equal(errors.New(mock.Anything), err)
@@ -116,7 +116,7 @@ func (u *ServiceList) TestCreateProduct_UserIsNotTheShopOwner() {
 	req := u.mockCreateProductReq
 	errForbidden := errmsg.NewCostumErrors(403, errmsg.WithMessage("User is not shop owner"))
 
-	u.mockPort.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(false, nil)
+	u.mockProductRepo.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(false, nil)
 	_, err := u.service.CreateProduct(ctx, req)
 
 	u.Equal(errForbidden, err)
@@ -125,8 +125,8 @@ func (u *ServiceList) TestCreateProduct_Fail() {
 	ctx := context.Background()
 	req := u.mockCreateProductReq
 
-	u.mockPort.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(true, nil)
-	u.mockPort.Mock.On("CreateProduct", ctx, req).Return(mock.Anything, errors.New(mock.Anything))
+	u.mockProductRepo.Mock.On("IsShopOwner", ctx, req.UserId, req.ShopId).Return(true, nil)
+	u.mockProductRepo.Mock.On("CreateProduct", ctx, req).Return(mock.Anything, errors.New(mock.Anything))
 	_, err := u.service.CreateProduct(ctx, req)
 
 	u.Equal(errors.New(mock.Anything), err)
@@ -139,7 +139,7 @@ func (suite *ServiceList) TestGetProducts_Success() {
 	req := suite.mockGetProductsReq
 	res := suite.mockGetProductRes
 
-	suite.mockPort.On("GetProducts", ctx, req).Return(res, nil)
+	suite.mockProductRepo.On("GetProducts", ctx, req).Return(res, nil)
 	_, err := suite.service.GetProducts(ctx, req)
 
 	suite.Equal(nil, err)
@@ -150,7 +150,7 @@ func (suite *ServiceList) TestGetProducts_GetProductsRepoError() {
 	reqMock := suite.mockGetProductsReq
 	resMock := suite.mockGetProductRes
 
-	suite.mockPort.On("GetProducts", ctx, reqMock).Return(resMock, errors.New("error"))
+	suite.mockProductRepo.On("GetProducts", ctx, reqMock).Return(resMock, errors.New("error"))
 	_, err := suite.service.GetProducts(ctx, reqMock)
 
 	suite.Equal(errors.New("error"), err)
@@ -162,7 +162,7 @@ func (suite *ServiceList) TestGetProducts_ProductsEmpty() {
 	res := suite.mockGetProductEmptyProductRes
 	errProductEmpty := errmsg.NewCostumErrors(404, errmsg.WithMessage("Products not found"))
 
-	suite.mockPort.On("GetProducts", ctx, req).Return(res, nil)
+	suite.mockProductRepo.On("GetProducts", ctx, req).Return(res, nil)
 	_, err := suite.service.GetProducts(ctx, req)
 
 	suite.Equal(errProductEmpty, err)
@@ -181,8 +181,8 @@ func (suite *ServiceList) TestUpdateProduct_Success() {
 		Id: "1",
 	}
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(true, nil)
-	suite.mockPort.On("UpdateProduct", ctx, reqMock).Return(resMock, nil)
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(true, nil)
+	suite.mockProductRepo.On("UpdateProduct", ctx, reqMock).Return(resMock, nil)
 	_, err := suite.service.UpdateProduct(ctx, reqMock)
 
 	suite.Equal(nil, err)
@@ -195,7 +195,7 @@ func (suite *ServiceList) TestUpdateProduct_IsProductOwnerError() {
 		Id:     "1",
 	}
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(false, errors.New("error"))
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(false, errors.New("error"))
 	_, err := suite.service.UpdateProduct(ctx, reqMock)
 
 	suite.Equal(errors.New("error"), err)
@@ -210,7 +210,7 @@ func (suite *ServiceList) TestUpdateProduct_UserIsNotTheProductOwner() {
 
 	errForbidden := errmsg.NewCostumErrors(403, errmsg.WithMessage("User is not product owner"))
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(false, nil)
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(false, nil)
 	_, err := suite.service.UpdateProduct(ctx, reqMock)
 
 	suite.Equal(errForbidden, err)
@@ -223,8 +223,8 @@ func (suite *ServiceList) TestUpdateProduct_UpdateProductError() {
 		Id:     "1",
 	}
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(true, nil)
-	suite.mockPort.On("UpdateProduct", ctx, reqMock).Return(mock.Anything, errors.New(mock.Anything))
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.Id).Return(true, nil)
+	suite.mockProductRepo.On("UpdateProduct", ctx, reqMock).Return(mock.Anything, errors.New(mock.Anything))
 	_, err := suite.service.UpdateProduct(ctx, reqMock)
 
 	suite.Equal(errors.New(mock.Anything), err)
@@ -238,7 +238,7 @@ func (suite *ServiceList) TestUpdateProductStock_Success() {
 		Items: []entity.UpdateStock{},
 	}
 
-	suite.mockPort.On("UpdateProductStock", ctx, reqMock).Return(nil)
+	suite.mockProductRepo.On("UpdateProductStock", ctx, reqMock).Return(nil)
 	err := suite.service.UpdateProductStock(ctx, reqMock)
 
 	suite.Equal(nil, err)
@@ -252,8 +252,8 @@ func (suite *ServiceList) TestDeleteProduct_Success() {
 		ProductId: "1",
 	}
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(true, nil)
-	suite.mockPort.On("DeleteProduct", ctx, reqMock).Return(nil)
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(true, nil)
+	suite.mockProductRepo.On("DeleteProduct", ctx, reqMock).Return(nil)
 	err := suite.service.DeleteProduct(ctx, reqMock)
 
 	suite.Equal(nil, err)
@@ -266,7 +266,7 @@ func (suite *ServiceList) TestDeleteProduct_IsProductOwnerError() {
 		ProductId: "1",
 	}
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(false, errors.New(mock.Anything))
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(false, errors.New(mock.Anything))
 	err := suite.service.DeleteProduct(ctx, reqMock)
 
 	suite.Equal(errors.New(mock.Anything), err)
@@ -281,7 +281,7 @@ func (suite *ServiceList) TestDeleteProduct_UserIsNotTheProductOwner() {
 
 	errForbidden := errmsg.NewCostumErrors(403, errmsg.WithMessage("User is not product owner"))
 
-	suite.mockPort.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(false, nil)
+	suite.mockProductRepo.On("IsProductOwner", ctx, reqMock.UserId, reqMock.ProductId).Return(false, nil)
 	err := suite.service.DeleteProduct(ctx, reqMock)
 
 	suite.Equal(errForbidden, err)
